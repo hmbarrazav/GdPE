@@ -1,3 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Tablero demostrativo de la actividad Decodificando la taxonomía digital. Seis niveles de Bloom y estudiantes asignados.">
+  <title>MATE2-203 | Decodificando la taxonomía digital</title>
+  <style>
+    :root { color-scheme: light; --ink:#172238; --muted:#60708b; --border:#dce3ee; --surface:#fff; --bg:#f2f5fa; --navy:#14233e; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--bg); color:var(--ink); font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color:inherit; }
+    button, input, select, textarea { font:inherit; }
+    button { cursor:pointer; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible { outline:3px solid #6092ff; outline-offset:2px; }
+    .masthead { background:linear-gradient(110deg, #102039, #203961 72%, #25477a); color:#fff; padding:24px max(24px,calc((100vw - 1780px)/2)); box-shadow:0 5px 24px rgba(27,47,79,.1); }
+    .toprow, .header-bottom, .toolbar, .board-top, .column-header, .card-footer, .modal-actions { display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .eyebrow { font-size:11px; font-weight:750; text-transform:uppercase; letter-spacing:.16em; color:#9dc6ff; }
+    h1 { font-size:clamp(21px,2.3vw,32px); margin:6px 0 4px; letter-spacing:-.028em; }
+    .subtitle { color:#d0def2; margin:0; font-size:13px; }
+    .header-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .light-link, .print-button { display:inline-flex; align-items:center; gap:7px; white-space:nowrap; text-decoration:none; border-radius:10px; font-size:12px; font-weight:700; padding:10px 13px; border:1px solid #839bc260; }
+    .light-link { color:#fff; background:#ffffff15; }
+    .light-link:hover { background:#ffffff27; }
+    .print-button { color:#132747; border-color:#fff; background:#fff; }
+    .print-button:hover { background:#edf3ff; }
+    .header-bottom { margin-top:19px; border-top:1px solid #ffffff26; padding-top:14px; flex-wrap:wrap; }
+    .header-note { font-size:12px; color:#d1deef; max-width:980px; line-height:1.55; }
+    .header-note strong { color:#fff; }
+    .small-pill { border-radius:999px; font-size:11px; font-weight:700; color:#d9e8ff; background:#ffffff16; border:1px solid #ffffff20; padding:5px 9px; }
+    .shell { max-width:1880px; margin:auto; padding:21px 22px 30px; }
+    .summary-grid { display:grid; grid-template-columns:1.6fr repeat(3,minmax(110px,.46fr)); gap:12px; }
+    .summary-card { background:#fff; border:1px solid var(--border); box-shadow:0 3px 10px #21375d08; border-radius:14px; padding:14px 17px; min-height:92px; }
+    .summary-card .title { color:#61718a; font-size:11px; font-weight:800; letter-spacing:.045em; text-transform:uppercase; }
+    .summary-card .big { font-size:27px; font-weight:800; margin-top:5px; letter-spacing:-.02em; }
+    .summary-card .note { font-size:11px; color:#73829a; margin-top:2px; }
+    .intro-card { border-left:4px solid #4577d5; }
+    .intro-card h2 { margin:0 0 7px; font-size:15px; }
+    .intro-card p { margin:0; font-size:12px; line-height:1.57; color:#4e607c; }
+    .workflow { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:13px 0; }
+    .step { background:#e9eef6; border:1px solid #dce4f0; border-radius:10px; padding:11px 13px; font-size:12px; color:#4b5c75; line-height:1.5; }
+    .step strong { display:block; color:#24344c; margin-bottom:3px; font-size:12px; }
+    .step-index { color:#2460b2; font-weight:850; margin-right:5px; }
+    .toolbar { flex-wrap:wrap; margin:19px 0 10px; }
+    .toolbar h2 { font-size:17px; margin:0 0 2px; letter-spacing:-.015em; }
+    .toolbar p { margin:0; color:#718097; font-size:12px; }
+    .toolbar-right { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .search { border:1px solid #d5deeb; background:#fff; border-radius:9px; padding:9px 12px; width:260px; max-width:100%; outline:none; color:#24334e; font-size:12px; }
+    .action-btn { border:1px solid #d1dbe9; background:#fff; color:#28436c; border-radius:9px; font-size:12px; padding:9px 12px; font-weight:750; }
+    .action-btn:hover { background:#edf4ff; }
+    .board { display:grid; grid-template-columns:repeat(6,minmax(285px,1fr)); gap:13px; overflow-x:auto; padding-bottom:14px; scrollbar-color:#b3bfd2 transparent; align-items:start; }
+    .column { background:#e8edf4; border:1px solid #d8e1ec; border-radius:13px; min-width:285px; overflow:hidden; display:flex; flex-direction:column; min-height:500px; }
+    .column-header { background:var(--accent); color:white; padding:14px 14px 11px; gap:8px; align-items:flex-start; }
+    .level-number { display:inline-grid; place-items:center; width:26px; height:26px; border-radius:8px; background:#ffffff35; font-weight:900; font-size:13px; }
+    .level-title { font-size:14px; font-weight:850; letter-spacing:.035em; text-transform:uppercase; }
+    .level-subtitle { font-size:11px; color:#fff; opacity:.87; margin-top:2px; }
+    .counter { font-size:10px; font-weight:800; background:#ffffff32; padding:5px 8px; border-radius:100px; white-space:nowrap; }
+    .roster { background:#fff; border-bottom:1px solid #d7e1ec; padding:0 12px; }
+    .roster summary { cursor:pointer; padding:12px 0; color:#3a4e6c; font-size:11px; font-weight:800; }
+    .roster-list { margin:0; padding:0 0 12px 0; list-style:none; display:grid; gap:9px; }
+    .roster-list li { font-size:10.5px; line-height:1.45; color:#283954; }
+    .roster-list code { display:block; color:#8190a3; font-size:10px; margin-bottom:2px; }
+    .column-body { padding:11px; display:grid; gap:10px; align-content:start; }
+    .column-action { border:1.5px dashed #a6b6cc; color:#465e7e; background:#f8fafc; border-radius:10px; padding:12px; font-size:12px; font-weight:800; width:100%; }
+    .column-action:hover { background:#fff; border-color:var(--accent); color:var(--accent); }
+    .card { background:#fff; border:1px solid #dce3ee; border-left:4px solid var(--accent); border-radius:10px; padding:12px; box-shadow:0 3px 8px #21375d07; overflow-wrap:anywhere; }
+    .card.is-demo { border-style:solid; }
+    .card-label { font-size:9px; color:#8290a4; letter-spacing:.08em; text-transform:uppercase; font-weight:850; }
+    .card-title { color:var(--accent); font-size:15px; font-weight:850; margin:4px 0 10px; }
+    .field { font-size:11px; line-height:1.52; margin:7px 0; color:#40526c; }
+    .field strong { color:#192941; }
+    .field.tool { background:#f0f4fa; border:1px solid #e5eaf2; border-radius:7px; padding:7px 8px; }
+    .card-footer { border-top:1px solid #edf0f4; padding-top:9px; margin-top:12px; align-items:flex-start; }
+    .author { font-size:10px; color:#687b93; line-height:1.4; max-width:158px; }
+    .mini-btn { background:#eef4ff; color:#295d9d; font-size:10px; border:1px solid #d8e6f7; border-radius:6px; padding:6px 8px; white-space:nowrap; font-weight:750; }
+    .mini-btn:hover { background:#dbeafa; }
+    .card-actions { display:flex; gap:5px; }
+    .delete-btn { color:#9f3540; background:#fff0f0; border-color:#f1d2d2; }
+    .empty { text-align:center; color:#7e8b9b; font-size:11px; padding:12px; }
+    .footnote { font-size:11px; line-height:1.6; color:#728099; padding:12px 3px; }
+    .footnote strong { color:#465a77; }
+    .footer-links { display:flex; flex-wrap:wrap; gap:18px; margin-top:7px; }
+    .footer-links a { color:#245aa5; text-decoration:none; font-weight:700; }
+    .footer-links a:hover { text-decoration:underline; }
+    dialog { border:0; border-radius:17px; padding:0; width:min(660px,calc(100vw - 26px)); max-height:92vh; box-shadow:0 35px 90px #09172b50; }
+    dialog::backdrop { background:#0a1731af; backdrop-filter:blur(2px); }
+    .modal-header { padding:20px 24px 16px; background:#132746; color:#fff; }
+    .modal-header h2 { margin:0 0 5px; font-size:19px; }
+    .modal-header p { margin:0; color:#c2d2e8; font-size:12px; }
+    .modal-body { padding:18px 24px 10px; max-height:66vh; overflow:auto; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px 14px; }
+    .form-field { display:flex; flex-direction:column; gap:5px; }
+    .form-field.full { grid-column:1 / -1; }
+    .form-field label { color:#344761; font-size:11px; font-weight:800; }
+    .form-field input, .form-field textarea, .form-field select { border-radius:9px; border:1px solid #d5deea; padding:10px 11px; width:100%; background:#fff; color:#23334a; font-size:12px; }
+    .form-field textarea { resize:vertical; min-height:70px; }
+    .form-hint { font-size:10px; color:#718199; line-height:1.5; }
+    .modal-actions { border-top:1px solid #e9eef4; padding:14px 24px; justify-content:flex-end; }
+    .primary-btn { border:0; color:#fff; font-size:12px; border-radius:9px; font-weight:800; padding:11px 17px; background:#315fa8; }
+    .primary-btn:hover { background:#234d8d; }
+    .notice { background:#fff7df; border:1px solid #f1dda7; color:#6d581e; padding:10px 13px; border-radius:9px; font-size:11px; line-height:1.5; margin-bottom:14px; }
+    .toast { position:fixed; bottom:21px; left:50%; transform:translateX(-50%); background:#162743; color:#fff; border-radius:10px; padding:12px 18px; font-size:12px; box-shadow:0 12px 30px #0d203c40; z-index:50; max-width:94%; }
+    .toast[hidden] { display:none; }
+    @media (min-width:1870px) { .board { overflow-x:visible; } }
+    @media (max-width:1000px) { .summary-grid { grid-template-columns:1fr repeat(3,minmax(85px,.42fr)); } .workflow { grid-template-columns:repeat(2,1fr); } }
+    @media (max-width:680px) { .masthead { padding:20px 16px; } .toprow { align-items:flex-start; flex-direction:column; } .shell { padding:15px 11px 25px; } .summary-grid { grid-template-columns:repeat(3,1fr); } .intro-card { grid-column:1/-1; } .summary-card { padding:13px 11px; } .summary-card .big { font-size:22px; } .workflow { grid-template-columns:1fr 1fr; } .toolbar { align-items:stretch; } .toolbar-right { width:100%; } .search { width:100%; flex:1; } .form-grid { grid-template-columns:1fr; } .modal-body { padding:16px; } .modal-header, .modal-actions { padding:16px; } }
+    @media print {
+      @page { size:A3 landscape; margin:12mm; }
+      body { background:#fff; print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+      .masthead { padding:14px 0; box-shadow:none; }
+      .header-actions, .workflow, .toolbar-right, .column-action, .mini-btn, .footnote, .modal-actions { display:none!important; }
+      .shell { padding:13px 0; max-width:none; }
+      .summary-grid { grid-template-columns:2fr 1fr 1fr 1fr; }
+      .board { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; overflow:visible; }
+      .column { min-width:0; min-height:auto; break-inside:avoid; }
+      .card { break-inside:avoid; }
+      .roster:not([open]) .roster-list { display:none; }
+      .toolbar { margin:10px 0; }
+      dialog, .toast { display:none!important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="toprow">
+      <div>
+        <div class="eyebrow">Maestría en Tecnología Educativa · Semana 2</div>
+        <h1>Decodificando la taxonomía digital</h1>
+        <p class="subtitle">MATE2-203 · Gestión de Programas Educativos con TIC · Tablero demostrativo</p>
+      </div>
+      <div class="header-actions">
+        <a class="light-link" href="https://eduteka.icesi.edu.co/articulos/taxonomiabloomdigital" target="_blank" rel="noopener noreferrer">↗ Lectura de Andrew Churches</a>
+        <a class="light-link" href="https://padlet.com/hmbarrazav/mate2-203-taxonomia-digital-semana-2-s025gog49po6huzsgv2a" target="_blank" rel="noopener noreferrer">↗ Abrir Padlet oficial</a>
+        <button class="print-button" type="button" id="printBtn">⎙ Imprimir / PDF</button>
+      </div>
+    </div>
+    <div class="header-bottom">
+      <div class="header-note"><strong>Objetivo:</strong> seleccionar y justificar aplicaciones digitales alineadas con un verbo cognitivo y una evidencia verificable. <strong>Cada estudiante propone 3 verbos y publica 3 tarjetas</strong> en su columna. Cada verbo se relaciona con <strong>2 herramientas</strong> (principal y alternativa).</div>
+      <div class="header-actions"><span class="small-pill">6 niveles</span><span class="small-pill">26 participantes</span><span class="small-pill">2 min por representante</span></div>
+    </div>
+  </header>
+
+  <div class="shell">
+    <section class="summary-grid" aria-label="Resumen de la actividad">
+      <div class="summary-card intro-card">
+        <h2>La herramienta no determina el nivel cognitivo</h2>
+        <p>El nivel depende de lo que hace el estudiante. Para cada tarjeta, evidencie la cadena <strong>verbo → acción digital → software → producto → justificación</strong>. Los ejemplos se distinguen de las contribuciones reales.</p>
+      </div>
+      <div class="summary-card"><div class="title">Estudiantes</div><div class="big">26</div><div class="note">Distribuidos en 6 niveles</div></div>
+      <div class="summary-card"><div class="title">Meta de tarjetas</div><div class="big">78</div><div class="note">3 por participante</div></div>
+      <div class="summary-card"><div class="title">Tarjetas de práctica</div><div class="big" id="totalCount">0 / 78</div><div class="note">Guardadas solo en este navegador</div></div>
+    </section>
+
+    <nav class="workflow" aria-label="Fases de trabajo">
+      <div class="step"><strong><span class="step-index">01</span> Asignación</strong>Identifique su columna y revise sus integrantes.</div>
+      <div class="step"><strong><span class="step-index">02</span> Minería de texto</strong>Lea únicamente su nivel en Churches. Seleccione 3 verbos digitales y 2 herramientas por verbo.</div>
+      <div class="step"><strong><span class="step-index">03</span> Construcción</strong>Redacte tarjetas con definición, herramienta, evidencia y justificación. Cópielas al Padlet real.</div>
+      <div class="step"><strong><span class="step-index">04</span> Socialización</strong>Un representante por nivel explica los hallazgos en 2 minutos. El Padlet real se exporta a PDF.</div>
+    </nav>
+
+    <div class="toolbar">
+      <div><h2>Tablero por niveles cognitivos</h2><p>Las tarjetas marcadas «Ejemplo» son solo referencias y no se contabilizan.</p></div>
+      <div class="toolbar-right">
+        <input class="search" id="searchBox" type="search" placeholder="Buscar verbo, herramienta o estudiante…" aria-label="Buscar dentro del tablero">
+        <button class="action-btn" type="button" id="clearFilterBtn">Limpiar búsqueda</button>
+      </div>
+    </div>
+
+    <main class="board" id="board" aria-label="Tablero digital con seis columnas de Bloom"></main>
+
+    <footer class="footnote">
+      <strong>Importante:</strong> este archivo es una simulación para aprender el formato; no se conecta ni publica en Padlet y no acredita el historial individual de edición. El registro de participación y la exportación oficial deben realizarse en <strong>Padlet</strong>, y el PDF debe subirse a la plataforma indicada por el docente. La opción «Imprimir / PDF» únicamente genera una copia local de esta demostración.
+      <div class="footer-links">
+        <a href="https://padlet.com/hmbarrazav/mate2-203-taxonomia-digital-semana-2-s025gog49po6huzsgv2a" target="_blank" rel="noopener noreferrer">Ir al tablero real de Padlet</a>
+        <a href="https://eduteka.icesi.edu.co/articulos/taxonomiabloomdigital" target="_blank" rel="noopener noreferrer">Consultar la lectura base</a>
+      </div>
+    </footer>
+  </div>
+
+  <dialog id="cardDialog" aria-labelledby="dialogTitle">
+    <form id="cardForm">
+      <div class="modal-header"><h2 id="dialogTitle">Preparar una tarjeta digital</h2><p id="dialogSubtitle">Una tarjeta por verbo, con dos herramientas digitales.</p></div>
+      <div class="modal-body">
+        <div class="notice"><strong>Atención:</strong> el registro es una práctica local. Después de guardar, use «Copiar» y publique el contenido en la columna correcta del Padlet oficial. No sustituye la publicación real.</div>
+        <div class="form-grid">
+          <div class="form-field full"><label for="student">Participante (según asignación) *</label><select id="student" required></select></div>
+          <div class="form-field full"><label for="verb">Título: verbo digital en infinitivo *</label><input id="verb" maxlength="80" required placeholder="Ej.: Etiquetar"></div>
+          <div class="form-field full"><label for="definition">Definición operativa: ¿qué hace digitalmente? *</label><textarea id="definition" required maxlength="500" placeholder="Describa una acción observable que realiza el estudiante con tecnología."></textarea></div>
+          <div class="form-field"><label for="tool1">Herramienta principal (software) *</label><input id="tool1" maxlength="100" required placeholder="Ej.: Notion"></div>
+          <div class="form-field"><label for="tool2">Segunda herramienta (alternativa) *</label><input id="tool2" maxlength="100" required placeholder="Ej.: Airtable"></div>
+          <div class="form-field full"><label for="evidence">Evidencia (output): archivo, enlace o producto evaluable *</label><input id="evidence" maxlength="240" required placeholder="Ej.: enlace a base de datos con categorías justificadas"></div>
+          <div class="form-field full"><label for="justification">Justificación: alineamiento, eficiencia y evolución con TIC *</label><textarea id="justification" required maxlength="650" placeholder="Explique por qué el software permite realizar el verbo en este nivel, y qué aporta respecto al trabajo sin TIC."></textarea></div>
+          <p class="form-hint full">La tarjeta final respeta los cuatro campos obligatorios. La evolución tecnológica se explica dentro de la justificación. Máximo: tres verbos distintos por participante.</p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="action-btn" type="button" id="cancelBtn">Cancelar</button>
+        <button class="primary-btn" type="submit">Guardar tarjeta de práctica</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" hidden role="status" aria-live="polite"></div>
+
+  <script>
+    'use strict';
+    const PADLET_URL = 'https://padlet.com/hmbarrazav/mate2-203-taxonomia-digital-semana-2-s025gog49po6huzsgv2a';
+    const STORAGE_KEY = 'gdpe_bloom_demo_v2';
+
+    const students = [
+      ['2026-352001','AGUILAR YANA, BRANDON LUIS',1],
+      ['2026-352002','BENAVIDES MAMANI, YOSELYN JIMENA',1],
+      ['2026-352003','CHÁVEZ DÍAZ, MELANIE ALESSANDRA',1],
+      ['2026-352004','COHAILA GARCIA, MARIBEL',1],
+      ['2026-352005','CUBA AMÉSQUITA, LUIS FABRIZIO',2],
+      ['2026-352006','CURI QUISPE, HECTOR MIJAIL',2],
+      ['2026-352007','DURAN UCHARICO, JULYSSA XIMENA',2],
+      ['2026-352008','FERNANDEZ BARDALES, EDILBERTO FERNANDO',2],
+      ['2026-352009','FLORES FLORES, OSCAR GUILLERMO',3],
+      ['2026-352010','GONZÁLEZ GUTIERREZ DE MONTERO, GABRIELA DELFINA',3],
+      ['2026-352011','GUEVARA MORALES, PREYSLER MADONNA',3],
+      ['2026-352012','HUALLPA ROSA, YESICA ROCÍO',3],
+      ['2026-352013','LEIVA YUFRA, YEMILE DEL ROSARIO',3],
+      ['2026-352014','LUNNA ARAYA, LIDIA GABRIELA',4],
+      ['2026-352015','MACHACCA ROSA, DENNISS LIZBET',4],
+      ['2026-352016','MAMANI CHIRE, LUCIO DANILO',4],
+      ['2026-352017','MAMANI QUENTA, MARCO ANTONIO',4],
+      ['2026-352018','MONTERO ZUÑIGA, BORIS EDGARD',5],
+      ['2026-352019','PARIHUANA MAMANI, ADELINA JUANA',5],
+      ['2026-352020','PÉREZ MORENO, JOSUE UZIEL',5],
+      ['2026-352021','QUENAYA LAYME, EDER WILSON',5],
+      ['2026-352022','QUINTEROS JOAQUIN, YENISEL MAYU',5],
+      ['2026-352023','RANGEL GARCIA, OSCAR MAURICIO',6],
+      ['2026-352024','SILVA MAMANI, TAYRA YARDELINA',6],
+      ['2026-352025','TORRES PAUCARA, CAROLINA FLORA',6],
+      ['2026-352026','VIZCARRA HUACAN, ANTONIO CESAR',6]
+    ];
+
+    const levels = [
+      { id:1, name:'Recordar', sub:'Recuperar y reconocer información', color:'#7456bc',
+        sample:{verb:'Marcar', definition:'Guarda páginas web relevantes en una colección digital de favoritos para recuperarlas posteriormente.', tool1:'Raindrop.io', tool2:'Marcadores de Google Chrome', evidence:'Enlace o captura de una colección de favoritos sobre un tema.', justification:'La selección y recuperación de enlaces responde al nivel Recordar; los marcadores en la nube facilitan el acceso desde distintos dispositivos.'}},
+      { id:2, name:'Comprender', sub:'Construir significado y clasificar', color:'#316bb5',
+        sample:{verb:'Etiquetar', definition:'Clasifica recursos digitales según su significado y asigna etiquetas temáticas coherentes.', tool1:'Notion', tool2:'Airtable', evidence:'Enlace a una base de recursos con etiquetas y categorías explicadas.', justification:'El estudiante debe interpretar el contenido antes de clasificarlo; las etiquetas digitales permiten reorganizar y filtrar información de forma inmediata.'}},
+      { id:3, name:'Aplicar', sub:'Ejecutar procedimientos', color:'#13837b',
+        sample:{verb:'Ejecutar', definition:'Implementa en una hoja de cálculo un procedimiento aprendido y ejecuta fórmulas para resolver ejercicios.', tool1:'Google Sheets', tool2:'Microsoft Excel para la Web', evidence:'Enlace a hoja con fórmulas funcionales y resultados verificados.', justification:'La evidencia muestra la ejecución de un procedimiento, no solo el recuerdo de una fórmula; la hoja automatiza cálculos y facilita repetirlos con otros datos.'}},
+      { id:4, name:'Analizar', sub:'Relacionar y descomponer', color:'#a57920',
+        sample:{verb:'Enlazar', definition:'Relaciona causas, consecuencias y evidencias de un problema mediante conexiones identificadas en un mapa digital.', tool1:'CmapTools', tool2:'Miro', evidence:'PDF o enlace a mapa conceptual con relaciones argumentadas.', justification:'El mapa explicita las conexiones entre partes de un fenómeno, permitiendo examinar su estructura; la edición digital facilita reorganizar relaciones y contrastar hipótesis.'}},
+      { id:5, name:'Evaluar', sub:'Emitir juicios con criterios', color:'#c26930',
+        sample:{verb:'Revisar', definition:'Examina un documento de un compañero y registra observaciones sustentadas en una rúbrica.', tool1:'Google Docs', tool2:'Microsoft Word para la Web', evidence:'Documento con comentarios y sugerencias fundamentadas por criterios.', justification:'Revisar implica emitir juicios explícitos con estándares; los comentarios y el historial digital hacen trazable la retroalimentación.'}},
+      { id:6, name:'Crear', sub:'Producir una solución original', color:'#b74755',
+        sample:{verb:'Programar', definition:'Diseña y construye una aplicación interactiva que resuelve un problema planteado.', tool1:'Scratch', tool2:'Microsoft MakeCode', evidence:'Archivo .sb3 o enlace a un proyecto interactivo ejecutable.', justification:'El estudiante integra decisiones, algoritmos y recursos para producir un artefacto nuevo; el entorno digital permite ejecutar, probar y compartir la solución.'}}
+    ];
+
+    let contributions = [];
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      if (Array.isArray(saved)) contributions = saved.filter(c => c && students.some(s => s[0] === c.studentCode && s[2] === c.level));
+    } catch (e) { contributions = []; }
+
+    const board = document.querySelector('#board');
+    const dialog = document.querySelector('#cardDialog');
+    const form = document.querySelector('#cardForm');
+    const search = document.querySelector('#searchBox');
+    const select = document.querySelector('#student');
+    const toast = document.querySelector('#toast');
+    let activeLevel = 1;
+    let toastTimeout;
+
+    function el(tag, className, textContent) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (textContent !== undefined) node.textContent = textContent;
+      return node;
+    }
+    function txt(v) { return String(v || '').trim(); }
+    function formatPadlet(c) {
+      return `${c.verb}\n\nDefinición operativa: ${c.definition}\nHerramienta (software): ${c.tool1} (alternativa: ${c.tool2})\nEvidencia (output): ${c.evidence}\nJustificación: ${c.justification}`;
+    }
+    function showToast(message) {
+      toast.textContent = message; toast.hidden = false;
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => { toast.hidden = true; }, 3500);
+    }
+    async function copyText(value) {
+      try {
+        if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(value);
+        else {
+          const area = el('textarea'); area.value = value; area.style.position = 'fixed'; area.style.left = '-9999px';
+          document.body.appendChild(area); area.select();
+          if (!document.execCommand('copy')) throw Error('No se pudo copiar');
+          area.remove();
+        }
+        showToast('Texto copiado. Publíquelo en el Padlet oficial.');
+      } catch (err) {
+        const win = window.prompt('Copie este contenido y péguelo en Padlet:', value);
+        if (win !== null) showToast('Use el contenido copiado en Padlet.');
+      }
+    }
+    function field(label, value, special=false) {
+      const p = el('p', special ? 'field tool' : 'field');
+      p.append(el('strong', '', `${label}: `), document.createTextNode(value));
+      return p;
+    }
+    function buildCard(c, level, demo) {
+      const card = el('article', 'card' + (demo ? ' is-demo' : ''));
+      card.style.setProperty('--accent', level.color);
+      card.append(el('div', 'card-label', demo ? 'Ejemplo · no contabilizado' : 'Contribución de práctica'));
+      card.append(el('h3', 'card-title', c.verb));
+      card.append(field('Definición operativa', c.definition));
+      card.append(field('Herramienta (software)', `${c.tool1} · Alternativa: ${c.tool2}`, true));
+      card.append(field('Evidencia (output)', c.evidence));
+      card.append(field('Justificación', c.justification));
+      const footer = el('div','card-footer');
+      let owner = 'Modelo orientativo · Nivel ' + level.id;
+      if (!demo) {
+        const s = students.find(s => s[0] === c.studentCode);
+        owner = s ? s[1] : 'Participante';
+      }
+      footer.append(el('div','author',owner));
+      const actions = el('div','card-actions');
+      const copy = el('button','mini-btn','Copiar'); copy.type='button'; copy.title='Copiar texto para publicarlo en Padlet';
+      copy.addEventListener('click', () => copyText(formatPadlet(c)));
+      actions.append(copy);
+      if (!demo) {
+        const remove = el('button', 'mini-btn delete-btn', 'Eliminar'); remove.type='button';
+        remove.title='Borrar solo esta tarjeta local de práctica';
+        remove.addEventListener('click', () => {
+          if (!confirm('¿Eliminar esta tarjeta de práctica? No afecta Padlet.')) return;
+          contributions = contributions.filter(i => i.id !== c.id);
+          save(); render(); showToast('Tarjeta de práctica eliminada.');
+        });
+        actions.append(remove);
+      }
+      footer.append(actions); card.append(footer);
+      return card;
+    }
+    function buildColumn(level, needle) {
+      const members = students.filter(s => s[2] === level.id);
+      const cards = contributions.filter(c => c.level === level.id);
+      const queryMatch = (c) => !needle || [c.verb,c.definition,c.tool1,c.tool2,c.evidence,c.justification,
+        students.find(s => s[0] === c.studentCode)?.[1] || ''].join(' ').toLocaleLowerCase('es').includes(needle);
+      const column = el('section','column'); column.style.setProperty('--accent',level.color);
+      const head = el('div','column-header');
+      const headingLeft = el('div');
+      const heading = el('div','level-title');
+      heading.append(el('span','level-number',String(level.id)), document.createTextNode('  '+level.name));
+      headingLeft.append(heading,el('div','level-subtitle',level.sub));
+      head.append(headingLeft,el('span','counter',`${cards.length} / ${members.length * 3} tarjetas`));
+      column.append(head);
+      const roster = el('details','roster');
+      const summary = el('summary', '', `Integrantes asignados (${members.length})`);
+      roster.append(summary);
+      const list = el('ul','roster-list');
+      members.forEach(s => { const li = el('li'); li.append(el('code','',s[0]),document.createTextNode(s[1])); list.append(li); });
+      roster.append(list); column.append(roster);
+      const body = el('div','column-body');
+      const add = el('button','column-action','+ Preparar una tarjeta'); add.type='button';
+      add.addEventListener('click', () => openDialog(level.id));
+      body.append(add);
+      if (!needle || queryMatch(level.sample)) body.append(buildCard(level.sample,level,true));
+      const visible = cards.filter(queryMatch);
+      visible.forEach(c => body.append(buildCard(c,level,false)));
+      if (needle && !(queryMatch(level.sample) || visible.length)) body.append(el('p','empty','No hay coincidencias.'));
+      column.append(body);
+      return column;
+    }
+    function render() {
+      const needle = search.value.trim().toLocaleLowerCase('es');
+      board.replaceChildren(...levels.map(level => buildColumn(level, needle)));
+      document.querySelector('#totalCount').textContent = `${contributions.length} / 78`;
+    }
+    function save() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(contributions)); }
+      catch (e) { showToast('El navegador no permitió almacenar los cambios.'); }
+    }
+    function openDialog(levelId) {
+      activeLevel = levelId;
+      form.reset();
+      select.replaceChildren(el('option','','Seleccione un participante'));
+      select.options[0].value = '';
+      students.filter(s => s[2] === levelId).forEach(s => {
+        const option = el('option','',`${s[1]} (${s[0]})`); option.value = s[0]; select.append(option);
+      });
+      document.querySelector('#dialogSubtitle').textContent = `${levels[levelId-1].name} · una tarjeta por verbo · máximo 3 tarjetas por participante`;
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open','');
+      select.focus();
+    }
+    form.addEventListener('submit', event => {
+      event.preventDefault();
+      const studentCode = select.value;
+      const verb = txt(document.querySelector('#verb').value);
+      const current = contributions.filter(c => c.studentCode === studentCode);
+      if (current.length >= 3) { showToast('Este participante ya tiene 3 tarjetas de práctica.'); return; }
+      if (current.some(c => c.verb.toLocaleLowerCase('es') === verb.toLocaleLowerCase('es'))) {
+        showToast('Este participante ya registró ese verbo. Seleccione otro.'); return;
+      }
+      const item = {
+        id: `${Date.now()}_${Math.random().toString(36).slice(2,9)}`,
+        level: activeLevel, studentCode, verb,
+        definition: txt(document.querySelector('#definition').value),
+        tool1: txt(document.querySelector('#tool1').value), tool2: txt(document.querySelector('#tool2').value),
+        evidence: txt(document.querySelector('#evidence').value),
+        justification: txt(document.querySelector('#justification').value)
+      };
+      contributions.push(item); save(); dialog.close(); render();
+      showToast('Tarjeta guardada localmente. Use «Copiar» para llevarla a Padlet.');
     });
     document.querySelector('#cancelBtn').addEventListener('click', () => dialog.close());
-    document.querySelector('#printB
+    document.querySelector('#printBtn').addEventListener('click', () => window.print());
+    document.querySelector('#clearFilterBtn').addEventListener('click', () => { search.value = ''; render(); search.focus(); });
+    search.addEventListener('input', render);
+    render();
+  </script>
+</body>
+</html>
