@@ -136,7 +136,7 @@
       </div>
     </div>
     <div class="header-bottom">
-      <div class="header-note"><strong>Objetivo:</strong> seleccionar y justificar aplicaciones digitales alineadas con un verbo cognitivo y una evidencia verificable. <strong>Cada estudiante propone 3 verbos y publica 3 tarjetas</strong> en su columna. Cada verbo se relaciona con <strong>2 herramientas</strong> (principal y alternativa).</div>
+      <div class="header-note"><strong>Objetivo:</strong> seleccionar y justificar aplicaciones digitales alineadas con un verbo cognitivo y una evidencia verificable. <strong>Cada estudiante selecciona 1 verbo digital y publica 1 tarjeta</strong> en su columna. Cada verbo se relaciona con <strong>2 herramientas</strong> (principal y alternativa).</div>
       <div class="header-actions"><span class="small-pill">6 niveles</span><span class="small-pill">26 participantes</span><span class="small-pill">2 min por representante</span></div>
     </div>
   </header>
@@ -148,13 +148,13 @@
         <p>El nivel depende de lo que hace el estudiante. Para cada tarjeta, evidencie la cadena <strong>verbo → acción digital → software → producto → justificación</strong>. Los ejemplos se distinguen de las contribuciones reales.</p>
       </div>
       <div class="summary-card"><div class="title">Estudiantes</div><div class="big">26</div><div class="note">Distribuidos en 6 niveles</div></div>
-      <div class="summary-card"><div class="title">Meta de tarjetas</div><div class="big">78</div><div class="note">3 por participante</div></div>
-      <div class="summary-card"><div class="title">Tarjetas de práctica</div><div class="big" id="totalCount">0 / 78</div><div class="note">Guardadas solo en este navegador</div></div>
+      <div class="summary-card"><div class="title">Meta de tarjetas</div><div class="big">26</div><div class="note">1 por participante</div></div>
+      <div class="summary-card"><div class="title">Tarjetas de práctica</div><div class="big" id="totalCount">0 / 26</div><div class="note">Guardadas solo en este navegador</div></div>
     </section>
 
     <nav class="workflow" aria-label="Fases de trabajo">
       <div class="step"><strong><span class="step-index">01</span> Asignación</strong>Identifique su columna y revise sus integrantes.</div>
-      <div class="step"><strong><span class="step-index">02</span> Minería de texto</strong>Lea únicamente su nivel en Churches. Seleccione 3 verbos digitales y 2 herramientas por verbo.</div>
+      <div class="step"><strong><span class="step-index">02</span> Minería de texto</strong>Lea únicamente su nivel en Churches. Seleccione 1 verbo digital y 2 herramientas que permitan ejecutarlo.</div>
       <div class="step"><strong><span class="step-index">03</span> Construcción</strong>Redacte tarjetas con definición, herramienta, evidencia y justificación. Cópielas al Padlet real.</div>
       <div class="step"><strong><span class="step-index">04</span> Socialización</strong>Un representante por nivel explica los hallazgos en 2 minutos. El Padlet real se exporta a PDF.</div>
     </nav>
@@ -191,7 +191,7 @@
           <div class="form-field"><label for="tool2">Segunda herramienta (alternativa) *</label><input id="tool2" maxlength="100" required placeholder="Ej.: Airtable"></div>
           <div class="form-field full"><label for="evidence">Evidencia (output): archivo, enlace o producto evaluable *</label><input id="evidence" maxlength="240" required placeholder="Ej.: enlace a base de datos con categorías justificadas"></div>
           <div class="form-field full"><label for="justification">Justificación: alineamiento, eficiencia y evolución con TIC *</label><textarea id="justification" required maxlength="650" placeholder="Explique por qué el software permite realizar el verbo en este nivel, y qué aporta respecto al trabajo sin TIC."></textarea></div>
-          <p class="form-hint full">La tarjeta final respeta los cuatro campos obligatorios. La evolución tecnológica se explica dentro de la justificación. Máximo: tres verbos distintos por participante.</p>
+          <p class="form-hint full">La tarjeta respeta los cuatro campos obligatorios. La evolución tecnológica se explica dentro de la justificación. Cada participante presenta <strong>un solo verbo en una sola tarjeta</strong>.</p>
         </div>
       </div>
       <div class="modal-actions">
@@ -254,7 +254,15 @@
     let contributions = [];
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      if (Array.isArray(saved)) contributions = saved.filter(c => c && students.some(s => s[0] === c.studentCode && s[2] === c.level));
+      if (Array.isArray(saved)) {
+        const valid = saved.filter(c => c && students.some(s => s[0] === c.studentCode && s[2] === c.level));
+        const seen = new Set();
+        contributions = valid.filter(c => {
+          if (seen.has(c.studentCode)) return false;
+          seen.add(c.studentCode);
+          return true;
+        });
+      }
     } catch (e) { contributions = []; }
 
     const board = document.querySelector('#board');
@@ -345,7 +353,7 @@
       const heading = el('div','level-title');
       heading.append(el('span','level-number',String(level.id)), document.createTextNode('  '+level.name));
       headingLeft.append(heading,el('div','level-subtitle',level.sub));
-      head.append(headingLeft,el('span','counter',`${cards.length} / ${members.length * 3} tarjetas`));
+      head.append(headingLeft,el('span','counter',`${cards.length} / ${members.length} tarjetas`));
       column.append(head);
       const roster = el('details','roster');
       const summary = el('summary', '', `Integrantes asignados (${members.length})`);
@@ -367,7 +375,7 @@
     function render() {
       const needle = search.value.trim().toLocaleLowerCase('es');
       board.replaceChildren(...levels.map(level => buildColumn(level, needle)));
-      document.querySelector('#totalCount').textContent = `${contributions.length} / 78`;
+      document.querySelector('#totalCount').textContent = `${contributions.length} / 26`;
     }
     function save() {
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(contributions)); }
@@ -379,9 +387,11 @@
       select.replaceChildren(el('option','','Seleccione un participante'));
       select.options[0].value = '';
       students.filter(s => s[2] === levelId).forEach(s => {
-        const option = el('option','',`${s[1]} (${s[0]})`); option.value = s[0]; select.append(option);
+        const completed = contributions.some(c => c.studentCode === s[0]);
+        const option = el('option','',`${s[1]} (${s[0]})${completed ? ' — tarjeta registrada' : ''}`);
+        option.value = s[0]; option.disabled = completed; select.append(option);
       });
-      document.querySelector('#dialogSubtitle').textContent = `${levels[levelId-1].name} · una tarjeta por verbo · máximo 3 tarjetas por participante`;
+      document.querySelector('#dialogSubtitle').textContent = `${levels[levelId-1].name} · un verbo y una tarjeta por participante`;
       if (typeof dialog.showModal === 'function') dialog.showModal();
       else dialog.setAttribute('open','');
       select.focus();
@@ -391,7 +401,7 @@
       const studentCode = select.value;
       const verb = txt(document.querySelector('#verb').value);
       const current = contributions.filter(c => c.studentCode === studentCode);
-      if (current.length >= 3) { showToast('Este participante ya tiene 3 tarjetas de práctica.'); return; }
+      if (current.length >= 1) { showToast('Este participante ya tiene su única tarjeta. Elimínela antes de preparar otra.'); return; }
       if (current.some(c => c.verb.toLocaleLowerCase('es') === verb.toLocaleLowerCase('es'))) {
         showToast('Este participante ya registró ese verbo. Seleccione otro.'); return;
       }
